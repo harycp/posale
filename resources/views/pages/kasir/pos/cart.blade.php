@@ -1,17 +1,14 @@
 <x-app-layout>
-    {{-- Header Halaman --}}
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('List Barang') }}
         </h2>
     </x-slot>
 
-    {{-- Penambahan Alpine.js jika belum ada di layout utama --}}
     <x-slot name="head">
         <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     </x-slot>
 
-    {{-- REVISI KUNCI: Menggunakan satu fungsi data utama 'pageManager' untuk stabilitas --}}
     <div class="py-12" x-data="pageManager({{ $total }})">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             {{-- Kontainer Utama Kartu --}}
@@ -206,19 +203,15 @@
 
     <x-slot name="script">
         <script>
-            // REVISI: Semua logika digabung ke dalam satu fungsi 'pageManager'
             function pageManager(total) {
                 return {
-                    // --- Properti dari cartManager ---
                     editingProductId: null,
                     currentQuantity: 0,
 
-                    // --- Properti dari paymentModalHandler ---
                     isOpen: false,
                     totalAmount: parseFloat(total) || 0,
                     paymentAmount: null,
 
-                    // --- Method dari cartManager ---
                     startEditing(productId, initialQuantity) {
                         this.editingProductId = productId;
                         this.currentQuantity = initialQuantity;
@@ -239,7 +232,6 @@
                         }
                     },
 
-                    // --- Method dari paymentModalHandler ---
                     openModal() {
                         this.paymentAmount = null;
                         this.isOpen = true;
@@ -253,7 +245,6 @@
                         return new Intl.NumberFormat('id-ID').format(num);
                     },
 
-                    // --- Getter dari paymentModalHandler ---
                     get paidAmount() {
                         return parseFloat(this.paymentAmount) || 0;
                     },
