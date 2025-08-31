@@ -1,3 +1,7 @@
+@php
+    $role = Auth::user()->role;
+@endphp
+
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
     <!-- Primary Navigation Menu -->
     <aside class="w-60 bg-white h-screen shadow-md hidden sm:block">
@@ -36,25 +40,25 @@
                     </a>
                 </div>
 
-                <!-- Navigation Links -->
+                @if ($role == 'admin')
+                    <!-- Logout Button -->
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <x-responsive-nav-link :href="route('logout')"
+                            onclick="event.preventDefault(); this.closest('form').submit();" class="w-full text-left">
+                            {{ __('Log Out') }}
+                        </x-responsive-nav-link>
+                    </form>
+                @endif
                 <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                     {{ __('Kasir') }}
                 </x-responsive-nav-link>
-                <x-responsive-nav-link href="#">
+                <x-responsive-nav-link :href="route('cashier.products.index')" :active="request()->routeIs('cashier.products.*')">
                     {{ __('Data Produk') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link href="#">
                     {{ __('Riwayat Transaksi') }}
                 </x-responsive-nav-link>
-
-                <!-- Logout Button -->
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <x-responsive-nav-link :href="route('logout')"
-                        onclick="event.preventDefault(); this.closest('form').submit();" class="w-full text-left">
-                        {{ __('Log Out') }}
-                    </x-responsive-nav-link>
-                </form>
 
             </div>
         </div>

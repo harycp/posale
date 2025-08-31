@@ -142,6 +142,10 @@
             });
         });
     </script>
+
+    @isset($script)
+        {{ $script }}
+    @endisset
 </body>
 
 </html>

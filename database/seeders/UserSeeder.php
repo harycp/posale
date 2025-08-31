@@ -14,7 +14,6 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Membuat User Admin
         User::create([
             'name' => 'Admin Toko',
             'email' => 'admin@tokobangunan.com',
@@ -22,7 +21,6 @@ class UserSeeder extends Seeder
             'role' => 'admin',
         ]);
 
-        // Membuat User Kasir
         User::create([
             'name' => 'Kasir 1',
             'email' => 'kasir@tokobangunan.com',
