@@ -58,8 +58,10 @@ class CashierCartController extends Controller
                         $cart[$productId]['quantity'] = $newQuantity;
                     }
 
+                    $cart[$productId]['stock'] = $product->stock;
+
                 } else {
-                     if ($quantityToAdd > $product->stock) {
+                    if ($quantityToAdd > $product->stock) {
                         $warnings[] = "Stok '{$product->name}' tidak cukup. Kuantitas diatur ke maks: {$product->stock}.";
                         $cart[$productId]['quantity'] = $product->stock;
                     } else {
@@ -70,6 +72,8 @@ class CashierCartController extends Controller
                     $cart[$productId]['price'] = $product->selling_price;
                     $cart[$productId]['image'] = $product->image;
                     $cart[$productId]['unit'] = $product->unit->short_name;
+                    $cart[$productId]['stock'] = $product->stock;
+                    
                 }
                 $addedCount++;
             }
@@ -102,6 +106,8 @@ class CashierCartController extends Controller
                 return redirect()->back()->with('error', 'Kuantitas melebihi stok yang tersedia!');
             }
             $cart[$id]['quantity'] = $request->quantity;
+
+            $cart[$id]['stock'] = $product->stock;
             session()->put('cart', $cart);
         }
 

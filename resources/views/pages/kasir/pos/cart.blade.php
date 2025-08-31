@@ -11,8 +11,8 @@
         <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     </x-slot>
 
-    {{-- PERBAIKAN: x-data sekarang membungkus semua elemen yang membutuhkannya, termasuk modal --}}
-    <div class="py-12" x-data="paymentModalHandler({{ $total }})">
+    {{-- REVISI KUNCI: Menggunakan satu fungsi data utama 'pageManager' untuk stabilitas --}}
+    <div class="py-12" x-data="pageManager({{ $total }})">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             {{-- Kontainer Utama Kartu --}}
             <div class="bg-white overflow-hidden shadow-lg sm:rounded-xl border border-gray-200">
@@ -20,20 +20,15 @@
 
                     {{-- BAGIAN HEADER --}}
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        {{-- Kode Transaksi --}}
                         <div class="bg-blue-800 text-white rounded-lg px-4 py-2 text-left w-full md:w-auto">
                             <p class="text-xs font-light">Kode Transaksi</p>
                             <p class="font-bold text-lg">{{ $transactionCode ?? 'N/A' }}</p>
                         </div>
-
-                        {{-- Judul Utama --}}
                         <div class="flex-grow text-center">
                             <span class="bg-blue-800 text-white font-bold text-xl px-10 py-3 rounded-lg">
                                 List Barang
                             </span>
                         </div>
-
-                        {{-- Tanggal --}}
                         <div class="text-right text-sm text-gray-600 w-full md:w-auto">
                             <p>Tanggal: <span
                                     class="font-semibold">{{ \Carbon\Carbon::now()->translatedFormat('j F Y') }}</span>
@@ -48,7 +43,7 @@
                                 <tr class="border-b-2 border-gray-300">
                                     <th class="py-3 pr-6 text-left text-sm font-semibold text-gray-700">No</th>
                                     <th class="py-3 px-6 text-left text-sm font-semibold text-gray-700">Nama Barang</th>
-                                    <th class="py-3 px-6 text-left text-sm font-semibold text-gray-700">Kuantitas</th>
+                                    <th class="py-3 px-6 text-center text-sm font-semibold text-gray-700">Kuantitas</th>
                                     <th class="py-3 px-6 text-left text-sm font-semibold text-gray-700">Satuan</th>
                                     <th class="py-3 px-6 text-left text-sm font-semibold text-gray-700">Harga Jual</th>
                                     <th class="py-3 pl-6 text-center text-sm font-semibold text-gray-700">Aksi</th>
@@ -57,21 +52,57 @@
                             <tbody>
                                 @forelse ($cart as $id => $details)
                                     <tr class="border-b border-gray-200">
-                                        <td class="py-4 pr-6 whitespace-nowrap text-sm text-gray-600">
+                                        <td class="py-4 pr-6 whitespace-nowrap text-sm text-gray-600 align-middle">
                                             {{ $loop->iteration }}</td>
-                                        <td class="py-4 px-6 whitespace-nowrap text-sm font-medium text-gray-800">
+                                        <td
+                                            class="py-4 px-6 whitespace-nowrap text-sm font-medium text-gray-800 align-middle">
                                             {{ $details['name'] }}</td>
-                                        <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-600">
-                                            {{ $details['quantity'] }}</td>
-                                        <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-600">
+                                        <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-600 align-middle">
+                                            <template x-if="editingProductId !== {{ $id }}">
+                                                <p class="text-center">{{ $details['quantity'] }}</p>
+                                            </template>
+                                            <template x-if="editingProductId === {{ $id }}">
+                                                <form action="{{ route('cashier.cart.update', $id) }}" method="POST"
+                                                    class="flex justify-center items-center space-x-2">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="button" @click.prevent="decrement()"
+                                                        class="p-1 rounded-md bg-red-100 text-red-600 hover:bg-red-200">-</button>
+                                                    <input type="number" name="quantity"
+                                                        x-model.number="currentQuantity"
+                                                        class="w-16 text-center border-gray-300 rounded-md shadow-sm">
+                                                    <button type="button"
+                                                        @click.prevent="increment({{ $details['stock'] }})"
+                                                        class="p-1 rounded-md bg-green-100 text-green-600 hover:bg-green-200">+</button>
+                                                    <button type="submit"
+                                                        class="text-green-600 hover:text-green-900 ml-2">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6"
+                                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2" d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                    </button>
+                                                    <button type="button" @click.prevent="cancelEditing()"
+                                                        class="text-gray-600 hover:text-gray-900">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6"
+                                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </button>
+                                                </form>
+                                            </template>
+                                        </td>
+                                        <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-600 align-middle">
                                             {{ $details['unit'] }}</td>
-                                        <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-600">Rp
+                                        <td class="py-4 px-6 whitespace-nowrap text-sm text-gray-600 align-middle">Rp
                                             {{ number_format($details['price'], 0, ',', '.') }}</td>
-                                        <td class="py-4 pl-6 whitespace-nowrap text-center">
-                                            <div class="flex justify-center items-center space-x-4">
-                                                {{-- Tombol Edit (bisa diubah menjadi modal nanti) --}}
-                                                <button class="text-blue-600 hover:text-blue-900">
-                                                    {{-- PERBAIKAN: Atribut viewBox SVG diperbaiki --}}
+                                        <td class="py-4 pl-6 whitespace-nowrap text-center align-middle">
+                                            <div x-show="editingProductId !== {{ $id }}"
+                                                class="flex justify-center items-center space-x-4">
+                                                <button
+                                                    @click="startEditing({{ $id }}, {{ $details['quantity'] }})"
+                                                    class="text-blue-600 hover:text-blue-900">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
                                                         viewBox="0 0 20 20" fill="currentColor">
                                                         <path
@@ -81,13 +112,11 @@
                                                             clip-rule="evenodd" />
                                                     </svg>
                                                 </button>
-                                                {{-- Tombol Hapus --}}
                                                 <form action="{{ route('cashier.cart.destroy', $id) }}" method="POST"
                                                     class="delete-form">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="text-red-600 hover:text-red-900">
-                                                        {{-- PERBAIKAN: Atribut viewBox SVG diperbaiki --}}
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
                                                             viewBox="0 0 20 20" fill="currentColor">
                                                             <path fill-rule="evenodd"
@@ -130,7 +159,7 @@
             </div>
         </div>
 
-        {{-- PERBAIKAN: Modal dipindahkan ke dalam div dengan x-data --}}
+        {{-- Modal Pembayaran --}}
         <div x-show="isOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
             x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
@@ -140,13 +169,11 @@
                 <form action="{{ route('cashier.transactions.store') }}" method="POST">
                     @csrf
                     <div class="space-y-4">
-                        {{-- Total Belanja --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Total Belanja</label>
                             <p class="mt-1 text-2xl font-bold text-gray-900"
                                 x-text="`Rp ${formatCurrency(totalAmount)}`"></p>
                         </div>
-                        {{-- Input Uang Pembayaran --}}
                         <div>
                             <label for="payment_amount" class="block text-sm font-medium text-gray-700">Jumlah Uang
                                 Dibayar</label>
@@ -155,14 +182,12 @@
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                 placeholder="0" required>
                         </div>
-                        {{-- Kembalian --}}
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Kembalian</label>
                             <p class="mt-1 text-2xl font-bold"
                                 :class="isPaymentInsufficient ? 'text-red-500' : 'text-green-600'"
                                 x-text="`Rp ${formatCurrency(change)}`"></p>
                         </div>
-                        {{-- Tombol Aksi --}}
                         <div class="flex justify-end space-x-3 pt-4">
                             <button type="button" @click="isOpen = false"
                                 class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">
@@ -181,28 +206,66 @@
 
     <x-slot name="script">
         <script>
-            function paymentModalHandler(total) {
+            // REVISI: Semua logika digabung ke dalam satu fungsi 'pageManager'
+            function pageManager(total) {
                 return {
+                    // --- Properti dari cartManager ---
+                    editingProductId: null,
+                    currentQuantity: 0,
+
+                    // --- Properti dari paymentModalHandler ---
                     isOpen: false,
-                    totalAmount: total,
-                    paymentAmount: '',
-                    openModal() {
-                        this.paymentAmount = ''; // Reset input setiap kali modal dibuka
-                        this.isOpen = true;
+                    totalAmount: parseFloat(total) || 0,
+                    paymentAmount: null,
+
+                    // --- Method dari cartManager ---
+                    startEditing(productId, initialQuantity) {
+                        this.editingProductId = productId;
+                        this.currentQuantity = initialQuantity;
                     },
-                    get change() {
-                        if (this.paymentAmount === '' || this.paymentAmount < this.totalAmount) {
-                            return 0;
+                    cancelEditing() {
+                        this.editingProductId = null;
+                    },
+                    increment(stockLimit) {
+                        if (this.currentQuantity < stockLimit) {
+                            this.currentQuantity++;
+                        } else {
+                            alert('Kuantitas tidak bisa melebihi stok!');
                         }
-                        return this.paymentAmount - this.totalAmount;
                     },
-                    get isPaymentInsufficient() {
-                        if (this.paymentAmount === '') return true;
-                        return this.paymentAmount < this.totalAmount;
+                    decrement() {
+                        if (this.currentQuantity > 1) {
+                            this.currentQuantity--;
+                        }
+                    },
+
+                    // --- Method dari paymentModalHandler ---
+                    openModal() {
+                        this.paymentAmount = null;
+                        this.isOpen = true;
+                        this.$nextTick(() => {
+                            document.getElementById('payment_amount').focus();
+                        });
                     },
                     formatCurrency(number) {
-                        return new Intl.NumberFormat('id-ID').format(number);
-                    }
+                        const num = Number(number);
+                        if (isNaN(num)) return '0';
+                        return new Intl.NumberFormat('id-ID').format(num);
+                    },
+
+                    // --- Getter dari paymentModalHandler ---
+                    get paidAmount() {
+                        return parseFloat(this.paymentAmount) || 0;
+                    },
+                    get change() {
+                        if (this.paidAmount < this.totalAmount) {
+                            return 0;
+                        }
+                        return this.paidAmount - this.totalAmount;
+                    },
+                    get isPaymentInsufficient() {
+                        return this.paidAmount < this.totalAmount;
+                    },
                 }
             }
         </script>

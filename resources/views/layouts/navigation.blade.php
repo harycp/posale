@@ -50,7 +50,7 @@
                         </x-responsive-nav-link>
                     </form>
                 @endif
-                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('cashier.pos.index')">
                     {{ __('Kasir') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('cashier.products.index')" :active="request()->routeIs('cashier.products.*')">
@@ -59,7 +59,13 @@
                 <x-responsive-nav-link href="#">
                     {{ __('Riwayat Transaksi') }}
                 </x-responsive-nav-link>
-
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <x-responsive-nav-link :href="route('logout')"
+                        onclick="event.preventDefault(); this.closest('form').submit();" class="w-full text-left">
+                        {{ __('Log Out') }}
+                    </x-responsive-nav-link>
+                </form>
             </div>
         </div>
 
