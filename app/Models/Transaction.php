@@ -7,16 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 class Transaction extends Model
 {
     protected $fillable = [
-        'product_code',
-        'name',
-        'image',
-        'unit_id',
-        'purchase_price',
-        'selling_price',
-        'stock',
+        'transaction_code',
+        'user_id',
+        'total_amount',
+        'payment_amount',
+        'status',
     ];
 
-    // Relasi: Satu produk memiliki satu satuan
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function unit()
     {
         return $this->belongsTo(Unit::class);
@@ -28,7 +30,6 @@ class Transaction extends Model
         return $this->hasMany(TransactionDetail::class);
     }
     
-    // Relasi: Satu produk bisa memiliki banyak catatan pengeluaran/stok masuk
     public function expenses()
     {
         return $this->hasMany(Expense::class);
