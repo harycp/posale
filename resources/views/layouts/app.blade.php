@@ -25,11 +25,11 @@
         <div class="flex-1 flex flex-col overflow-hidden">
             <!-- Page Heading / Top Bar -->
             @isset($header)
-                <header class="bg-white shadow-md sticky top-0 z-10">
+                <header class="bg-blue-500 text-white shadow-md sticky top-0 z-10">
                     <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
                         <div class="flex items-center justify-between h-16">
                             <!-- Header Title -->
-                            <div class="flex items-center">
+                            <div class="flex items-center text-white">
                                 {{ $header }}
                             </div>
 
@@ -149,3 +149,9 @@
 </body>
 
 </html>
+
+<style>
+    header h2 {
+        color: white !important;
+    }
+</style>

@@ -2,9 +2,9 @@
     $role = Auth::user()->role;
 @endphp
 
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
+<nav x-data="{ open: false }" class="bg-gray-800 border-b border-gray-100">
     <!-- Primary Navigation Menu -->
-    <aside class="w-60 bg-white h-screen shadow-md hidden sm:block">
+    <aside class="w-60 bg-gray-700 h-screen shadow-md hidden sm:block">
         <div class="h-full flex flex-col justify-between">
             <div class="p-6 space-y-4">
                 <!-- Logo -->
@@ -18,11 +18,11 @@
 
                 <div class="mb-4">
                     <a href="{{ route('profile.edit') }}"
-                        class="flex items-center space-x-3 group w-full p-2 rounded-md hover:bg-gray-100 transition duration-150 ease-in-out">
+                        class="flex items-center space-x-3 group w-full p-2 rounded-md hover:bg-blue-500 transition duration-150 ease-in-out">
                         <div class="relative">
                             <div
-                                class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                                <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor"
+                                class="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center overflow-hidden">
+                                <svg class="w-6 h-6 text-blue-800" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
@@ -32,13 +32,14 @@
                                 class="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white"></span>
                         </div>
                         <div>
-                            <p
-                                class="font-semibold text-sm text-gray-800 group-hover:text-blue-600 transition duration-150 ease-in-out">
-                                {{ Auth::user()->name }}</p>
-                            <p class="text-xs text-gray-500">Online</p>
+                            <p class="font-semibold text-sm text-white group-hover:text-white">
+                                {{ Auth::user()->name }}
+                            </p>
+                            <p class="text-xs text-white opacity-80">Online</p>
                         </div>
                     </a>
                 </div>
+
 
                 @if ($role == 'admin')
                     <!-- Logout Button -->

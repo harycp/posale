@@ -14,7 +14,7 @@ class CashierProductController extends Controller
     public function index()
     {
         $products = Product::with('unit')
-                    ->where('stock', '>', 0)
+                    ->where('stock', '>=', 1)
                     ->get();
         
         return view('pages.kasir.products.index', compact('products'));
