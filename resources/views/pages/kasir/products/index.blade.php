@@ -37,8 +37,8 @@
 
                         <!-- Tombol-Tombol -->
                         <div class="flex items-center space-x-2">
-                            <a href="#"
-                                class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2 whitespace-nowrap">
+                            <a href="{{ route('cashier.products.showUpdateStockForm') }}"
+                                class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center space-x-2 whitespace-nowrap transition">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
                                     fill="currentColor">
                                     <path fill-rule="evenodd"
@@ -153,8 +153,11 @@
                                 class="px-3 py-1 rounded-md bg-gray-200 disabled:opacity-50">Prev</button>
                             <template x-for="page in pages" :key="page">
                                 <button @click="currentPage = page"
-                                    :class="{ 'bg-indigo-600 text-white': currentPage === page, 'bg-gray-200': currentPage !==
-                                            page }"
+                                    :class="{
+                                        'bg-indigo-600 text-white': currentPage === page,
+                                        'bg-gray-200': currentPage !==
+                                            page
+                                    }"
                                     class="px-3 py-1 rounded-md" x-text="page"></button>
                             </template>
                             <button @click="nextPage" :disabled="currentPage === totalPages"

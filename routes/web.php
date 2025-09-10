@@ -43,6 +43,9 @@ Route::middleware(['auth', 'role:cashier'])->name('cashier.')->prefix('cashier')
     Route::put('products/{product}', [CashierProductController::class, 'update'])->name('products.update');
     Route::delete('products/{product}', [CashierProductController::class, 'destroy'])->name('products.destroy');
     
+    Route::get('products/stock/update', [CashierProductController::class, 'showUpdateStockForm'])->name('products.showUpdateStockForm');
+    Route::post('products/stock/update', [CashierProductController::class, 'updateStock'])->name('products.updateStock');
+
     Route::get('pos', [CashierPOSController::class, 'index'])->name('pos.index');
     
     Route::get('cart', [CashierCartController::class, 'index'])->name('cart.index');

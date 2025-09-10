@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Cashier;
 
 use App\Models\Unit;
+use App\Models\Expense;
 use App\Models\Product;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
 
@@ -103,5 +105,38 @@ class CashierProductController extends Controller
         }
         $product->delete();
         return redirect()->route('cashier.products.index')->with('success', 'Produk berhasil dihapus.');
+    }
+
+    public function showUpdateStockForm()
+    {
+        $products = Product::orderBy('name')->get();
+        return view('pages.kasir.products.updateStock', compact('products'));
+    }
+
+    public function updateStock(Request $request)
+    {
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'quantity' => 'required|integer|min:1',
+            'cost_per_item' => 'required|numeric|min:0',
+            'description' => 'nullable|string',
+        ]);
+
+        DB::transaction(function () use ($request) {
+            $product = Product::findOrFail($request->product_id);
+            $totalCost = $request->quantity * $request->cost_per_item;
+
+            Expense::create([
+                'product_id' => $product->id,
+                'quantity' => $request->quantity,
+                'cost_per_item' => $request->cost_per_item,
+                'total_cost' => $totalCost,
+                'description' => $request->description ?: "Pembelian stok {$product->name}",
+            ]);
+
+            $product->increment('stock', $request->quantity);
+        });
+
+        return redirect()->route('cashier.products.index')->with('success', 'Stok produk berhasil diperbarui.');
     }
 }
