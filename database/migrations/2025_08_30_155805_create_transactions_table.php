@@ -17,6 +17,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // Kasir yang melayani
             $table->unsignedBigInteger('total_amount');
             $table->unsignedBigInteger('payment_amount')->default(0);
+            $table->enum('payment_method', ['cash', 'qris', 'transfer'])->default('cash');
+            $table->string('payment_reference')->nullable();
             $table->enum('status', ['pending', 'completed'])->default('pending');
             $table->timestamps();
         });

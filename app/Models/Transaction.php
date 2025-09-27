@@ -12,6 +12,8 @@ class Transaction extends Model
         'total_amount',
         'payment_amount',
         'status',
+        'payment_method',
+        'payment_reference',
     ];
 
     public function user()

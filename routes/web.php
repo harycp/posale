@@ -54,6 +54,7 @@ Route::middleware(['auth', 'role:cashier'])->name('cashier.')->prefix('cashier')
     Route::delete('cart/destroy/{id}', [CashierCartController::class, 'destroy'])->name('cart.destroy');
 
     Route::post('transactions/store', [CashierTransactionController::class, 'store'])->name('transactions.store');
+    Route::get('transactions/{transaction}/receipt', [CashierTransactionController::class, 'showReceipt'])->name('transactions.receipt');
 });
 
 require __DIR__.'/auth.php';

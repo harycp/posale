@@ -15,33 +15,37 @@ class CashierTransactionController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'payment_method' => 'required',
             'payment_amount' => 'required|numeric|min:0',
         ]);
 
         $cart = session()->get('cart', []);
         $transactionCode = session()->get('transaction_code');
-        $total = 0;
-        foreach ($cart as $details) {
-            $total += $details['price'] * $details['quantity'];
-        }
 
         if (empty($cart)) {
             return redirect()->route('cashier.pos.index')->with('error', 'Keranjang kosong, tidak ada transaksi untuk diproses.');
         }
 
-        if ($request->payment_amount < $total) {
-            return redirect()->back()->with('error', 'Jumlah pembayaran tidak mencukupi.');
+        // Hitung total belanja dari session
+        $totalAmount = 0;
+        foreach ($cart as $details) {
+            $totalAmount += $details['price'] * $details['quantity'];
         }
 
-        try {
-            DB::beginTransaction();
+        if ($request->payment_method === 'cash' && $request->payment_amount < $totalAmount) {
+            return back()->with('error', 'Jumlah pembayaran kurang dari total tagihan.');
+        }
 
+
+        DB::beginTransaction();
+        try {
             $transaction = Transaction::create([
                 'transaction_code' => $transactionCode,
-                'user_id' => Auth::id(), // ID kasir yang sedang login
-                'total_amount' => $total,
+                'user_id' => Auth::id(),
+                'total_amount' => $totalAmount,
                 'payment_amount' => $request->payment_amount,
-                'status' => 'completed',
+                'payment_method' => $request->payment_method,
+                'status' => $request->payment_method === 'cash' ? 'completed' : 'pending',
             ]);
 
             foreach ($cart as $productId => $details) {
@@ -56,16 +60,24 @@ class CashierTransactionController extends Controller
                 $product->decrement('stock', $details['quantity']);
             }
 
-            DB::commit();
-
             session()->forget(['cart', 'transaction_code']);
 
-            return redirect()->route('cashier.pos.index')->with('success', 'Transaksi berhasil!');
+            DB::commit();
+
+            return redirect()->route('cashier.transactions.receipt', $transaction->id)
+                             ->with('success', 'Transaksi berhasil disimpan.');
 
         } catch (Exception $e) {
-            dd($e);
             DB::rollBack();
-            return redirect()->back()->with('error', 'Terjadi kesalahan saat memproses transaksi. Silakan coba lagi.');
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat memproses transaksi: ' . $e->getMessage());
         }
+    }
+
+    public function showReceipt(Transaction $transaction)
+    {
+        // Load relasi yang dibutuhkan untuk struk
+        $transaction->load('user', 'transactionDetails.product.unit');
+
+        return view('pages.kasir.pos.receipt', compact('transaction'));
     }
 }

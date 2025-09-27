@@ -162,7 +162,9 @@
             x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
             class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" style="display: none;">
             <div @click.away="isOpen = false" class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
-                <h3 class="text-xl font-bold text-gray-800 mb-4">Konfirmasi Pembayaran</h3>
+                <h3 class="text-xl font-bold text-gray-800 mb-6">Konfirmasi Pembayaran</h3>
+
+                {{-- Form tetap sama --}}
                 <form action="{{ route('cashier.transactions.store') }}" method="POST">
                     @csrf
                     <div class="space-y-4">
@@ -171,15 +173,42 @@
                             <p class="mt-1 text-2xl font-bold text-gray-900"
                                 x-text="`Rp ${formatCurrency(totalAmount)}`"></p>
                         </div>
+
+                        <!-- Input Metode Pembayaran -->
                         <div>
-                            <label for="payment_amount" class="block text-sm font-medium text-gray-700">Jumlah Uang
-                                Dibayar</label>
-                            <input type="number" id="payment_amount" name="payment_amount"
-                                x-model.number="paymentAmount"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                placeholder="0" required>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Metode Pembayaran</label>
+                            <div class="flex rounded-md shadow-sm">
+                                <button type="button" @click="paymentMethod = 'cash'"
+                                    :class="{ 'bg-indigo-600 text-white': paymentMethod === 'cash', 'bg-white text-gray-700': paymentMethod !== 'cash' }"
+                                    class="px-4 py-2 border rounded-l-md w-full transition-colors">Tunai</button>
+                                <button type="button" @click="paymentMethod = 'qris'"
+                                    :class="{ 'bg-indigo-600 text-white': paymentMethod === 'qris', 'bg-white text-gray-700': paymentMethod !== 'qris' }"
+                                    class="px-4 py-2 border-t border-b w-full transition-colors">QRIS</button>
+                                <button type="button" @click="paymentMethod = 'transfer'"
+                                    :class="{ 'bg-indigo-600 text-white': paymentMethod === 'transfer', 'bg-white text-gray-700': paymentMethod !== 'transfer' }"
+                                    class="px-4 py-2 border rounded-r-md w-full transition-colors">Transfer</button>
+                            </div>
+                            <input type="hidden" name="payment_method" x-model="paymentMethod">
                         </div>
-                        <div>
+
+                        <!-- PERUBAHAN UTAMA DI SINI -->
+                        <div x-show="paymentMethod === 'cash'">
+                            <label for="payment_amount_display" class="block text-sm font-medium text-gray-700">Jumlah
+                                Uang Dibayar</label>
+                            {{-- Input ini HANYA untuk tampilan & interaksi, tidak punya atribut 'name' --}}
+                            <input type="number" id="payment_amount_display" x-model.number="paymentAmount"
+                                {{-- Atribut required diikat secara dinamis --}} :required="paymentMethod === 'cash'"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                placeholder="0">
+                        </div>
+
+                        {{-- Ini adalah SATU-SATUNYA input 'payment_amount' yang akan dikirim ke server --}}
+                        <input type="hidden" name="payment_amount"
+                            :value="paymentMethod === 'cash' ? (paymentAmount || 0) : totalAmount">
+                        <!-- AKHIR PERUBAHAN -->
+
+
+                        <div x-show="paymentMethod === 'cash'">
                             <label class="block text-sm font-medium text-gray-700">Kembalian</label>
                             <p class="mt-1 text-2xl font-bold"
                                 :class="isPaymentInsufficient ? 'text-red-500' : 'text-green-600'"
@@ -190,7 +219,7 @@
                                 class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">
                                 Batal
                             </button>
-                            <button type="submit" :disabled="isPaymentInsufficient"
+                            <button type="submit" :disabled="paymentMethod === 'cash' && isPaymentInsufficient"
                                 class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed">
                                 Konfirmasi Pembayaran
                             </button>
@@ -211,6 +240,7 @@
                     isOpen: false,
                     totalAmount: parseFloat(total) || 0,
                     paymentAmount: null,
+                    paymentMethod: 'cash',
 
                     startEditing(productId, initialQuantity) {
                         this.editingProductId = productId;
@@ -234,9 +264,10 @@
 
                     openModal() {
                         this.paymentAmount = null;
+                        this.paymentMethod = 'cash';
                         this.isOpen = true;
                         this.$nextTick(() => {
-                            document.getElementById('payment_amount').focus();
+                            document.getElementById('payment_amount_cash').focus();
                         });
                     },
                     formatCurrency(number) {
