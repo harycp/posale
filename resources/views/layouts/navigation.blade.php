@@ -60,6 +60,9 @@
                 <x-responsive-nav-link href="#">
                     {{ __('Riwayat Transaksi') }}
                 </x-responsive-nav-link>
+                <x-responsive-nav-link href="{{ route('cashier.reports.index') }}">
+                    {{ __('Laporan') }}
+                </x-responsive-nav-link>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <x-responsive-nav-link :href="route('logout')"

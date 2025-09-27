@@ -1,12 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Cashier\CashierPOSController;
 use App\Http\Controllers\Cashier\CashierCartController;
+use App\Http\Controllers\Cashier\CashierReportController;
 use App\Http\Controllers\Cashier\CashierProductController;
 use App\Http\Controllers\Cashier\CashierTransactionController;
-use App\Http\Controllers\HomeController;
 
 Route::get('/',[HomeController::class, 'index'])->name('home');
 
@@ -55,6 +56,9 @@ Route::middleware(['auth', 'role:cashier'])->name('cashier.')->prefix('cashier')
 
     Route::post('transactions/store', [CashierTransactionController::class, 'store'])->name('transactions.store');
     Route::get('transactions/{transaction}/receipt', [CashierTransactionController::class, 'showReceipt'])->name('transactions.receipt');
+
+        Route::get('reports', [CashierReportController::class, 'index'])->name('reports.index');
+    Route::get('reports/export', [CashierReportController::class, 'exportPDF'])->name('reports.export');
 });
 
 require __DIR__.'/auth.php';
