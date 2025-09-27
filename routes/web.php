@@ -56,8 +56,9 @@ Route::middleware(['auth', 'role:cashier'])->name('cashier.')->prefix('cashier')
 
     Route::post('transactions/store', [CashierTransactionController::class, 'store'])->name('transactions.store');
     Route::get('transactions/{transaction}/receipt', [CashierTransactionController::class, 'showReceipt'])->name('transactions.receipt');
+    Route::get('transactions/history', [CashierTransactionController::class, 'history'])->name('transactions.history');
 
-        Route::get('reports', [CashierReportController::class, 'index'])->name('reports.index');
+    Route::get('reports', [CashierReportController::class, 'index'])->name('reports.index');
     Route::get('reports/export', [CashierReportController::class, 'exportPDF'])->name('reports.export');
 });
 

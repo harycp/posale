@@ -80,4 +80,25 @@ class CashierTransactionController extends Controller
 
         return view('pages.kasir.pos.receipt', compact('transaction'));
     }
+
+    public function history(Request $request)
+    {
+        // Query dasar untuk transaksi, diurutkan dari yang terbaru
+        $query = Transaction::with('user')->latest();
+
+        // Terapkan filter pencarian jika ada input 'search'
+        if ($request->filled('search')) {
+            $searchTerm = $request->input('search');
+            $query->where('transaction_code', 'like', "%{$searchTerm}%");
+        }
+
+        // Ambil data dengan paginasi (15 item per halaman)
+        $transactions = $query->paginate(15)->withQueryString();
+
+        // Kirim data ke view
+        return view('pages.kasir.pos.history', [
+            'transactions' => $transactions,
+            'search' => $request->input('search', '')
+        ]);
+    }
 }

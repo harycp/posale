@@ -57,7 +57,7 @@
                 <x-responsive-nav-link :href="route('cashier.products.index')" :active="request()->routeIs('cashier.products.*')">
                     {{ __('Data Produk') }}
                 </x-responsive-nav-link>
-                <x-responsive-nav-link href="#">
+                <x-responsive-nav-link href="{{ route('cashier.transactions.history') }}">
                     {{ __('Riwayat Transaksi') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link href="{{ route('cashier.reports.index') }}">

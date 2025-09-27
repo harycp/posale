@@ -19,4 +19,5 @@ class CashierPOSController extends Controller
         
         return view('pages.kasir.pos.index', compact('products'));
     }
+    
 }
