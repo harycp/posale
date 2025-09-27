@@ -12,25 +12,54 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900" x-data="posManager({{ json_encode($products) }})">
+                <div class="p-6 text-gray-900" x-data="posManager({{ $products->toJson() }})" x-init="init()">
 
                     <form action="{{ route('cashier.cart.add') }}" method="POST">
                         @csrf
-                        {{-- KONTROL ATAS --}}
-                        <div class="flex items-center justify-between mb-6">
-                            <div class="w-1/3">
-                                <input type="text" x-model.debounce.300ms="search"
-                                    placeholder="Cari nama atau kode produk..."
-                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        {{-- KONTROL ATAS - Disesuaikan agar mirip halaman Produk --}}
+                        <div class="flex items-center mb-6 space-x-4">
+                            <!-- Show Entries -->
+                            <div class="flex items-center space-x-2">
+                                <label for="itemsPerPage" class="text-sm text-gray-600">Show</label>
+                                <select x-model="itemsPerPage" id="itemsPerPage"
+                                    class="rounded-lg border-gray-300 text-sm">
+                                    <option value="5">5</option>
+                                    <option value="10">10</option>
+                                    <option value="20">20</option>
+                                    <option value="50">50</option>
+                                </select>
+                                <span class="text-sm text-gray-600">entries</span>
                             </div>
 
-                            <button type="submit" :disabled="itemsInCart === 0"
-                                class="inline-flex items-center px-6 py-3 bg-indigo-600 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-800 focus:outline-none focus:border-indigo-800 focus:ring ring-indigo-300 disabled:opacity-50 disabled:cursor-not-allowed transition ease-in-out duration-150">
-                                <span>Tambahkan ke List</span>
-                                <span x-show="itemsInCart > 0"
-                                    class="ml-2 bg-white text-indigo-600 rounded-full px-2 py-0.5 text-xs font-bold"
-                                    x-text="itemsInCart"></span>
-                            </button>
+                            <!-- Search Bar (Tumbuh mengisi ruang) -->
+                            <div class="flex-grow relative">
+                                <input type="text" x-model.debounce.350ms="search" @keydown.enter.prevent
+                                    placeholder="Cari nama atau kode produk..."
+                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <!-- Loading Spinner -->
+                                <div x-show="isLoading" class="absolute inset-y-0 right-0 flex items-center pr-3"
+                                    style="display: none;">
+                                    <svg class="animate-spin h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg"
+                                        fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10"
+                                            stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                        </path>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!-- Tombol Aksi -->
+                            <div class="flex items-center space-x-2">
+                                <button type="submit" :disabled="itemsInCart === 0"
+                                    class="inline-flex items-center px-6 py-2 bg-indigo-600 border border-transparent rounded-lg font-semibold text-sm text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-800 focus:outline-none focus:border-indigo-800 focus:ring ring-indigo-300 disabled:opacity-50 disabled:cursor-not-allowed transition ease-in-out duration-150">
+                                    <span>Tambahkan ke List</span>
+                                    <span x-show="itemsInCart > 0"
+                                        class="ml-2 bg-white text-indigo-600 rounded-full px-2 py-0.5 text-xs font-bold"
+                                        x-text="itemsInCart"></span>
+                                </button>
+                            </div>
                         </div>
 
                         <div class="overflow-x-auto border border-gray-200 rounded-lg">
@@ -39,76 +68,28 @@
                                     <tr>
                                         <th @click="sortBy('product_code')"
                                             class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            <div class="flex items-center">
-                                                <span>ID Produk</span>
-                                                <span class="ml-2">
-                                                    <svg x-show="sortColumn === 'product_code' && sortDirection === 'asc'"
-                                                        class="w-3 h-3 text-gray-600" fill="none"
-                                                        stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M5 15l7-7 7 7"></path>
-                                                    </svg>
-                                                    <svg x-show="sortColumn === 'product_code' && sortDirection === 'desc'"
-                                                        class="w-3 h-3 text-gray-600" fill="none"
-                                                        stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                                    </svg>
-                                                </span>
-                                            </div>
+                                            <div class="flex items-center"><span>ID Produk</span><span class="ml-2"
+                                                    x-html="sortIcon('product_code')"></span></div>
                                         </th>
                                         <th
                                             class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Gambar
-                                        </th>
+                                            Gambar</th>
                                         <th @click="sortBy('name')"
                                             class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            <div class="flex items-center">
-                                                <span>Nama Barang</span>
-                                                <span class="ml-2">
-                                                    <svg x-show="sortColumn === 'name' && sortDirection === 'asc'"
-                                                        class="w-3 h-3 text-gray-600" fill="none"
-                                                        stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M5 15l7-7 7 7"></path>
-                                                    </svg>
-                                                    <svg x-show="sortColumn === 'name' && sortDirection === 'desc'"
-                                                        class="w-3 h-3 text-gray-600" fill="none"
-                                                        stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                                    </svg>
-                                                </span>
-                                            </div>
+                                            <div class="flex items-center"><span>Nama Barang</span><span class="ml-2"
+                                                    x-html="sortIcon('name')"></span></div>
                                         </th>
                                         <th
                                             class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Satuan
-                                        </th>
+                                            Satuan</th>
                                         <th @click="sortBy('selling_price')"
                                             class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            <div class="flex items-center">
-                                                <span>Harga</span>
-                                                <span class="ml-2">
-                                                    <svg x-show="sortColumn === 'selling_price' && sortDirection === 'asc'"
-                                                        class="w-3 h-3 text-gray-600" fill="none"
-                                                        stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M5 15l7-7 7 7"></path>
-                                                    </svg>
-                                                    <svg x-show="sortColumn === 'selling_price' && sortDirection === 'desc'"
-                                                        class="w-3 h-3 text-gray-600" fill="none"
-                                                        stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                                    </svg>
-                                                </span>
-                                            </div>
+                                            <div class="flex items-center"><span>Harga</span><span class="ml-2"
+                                                    x-html="sortIcon('selling_price')"></span></div>
                                         </th>
                                         <th
                                             class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Kuantitas
-                                        </th>
+                                            Kuantitas</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
@@ -141,43 +122,42 @@
                                             </td>
                                         </tr>
                                     </template>
-                                    <template x-if="paginatedProducts.length === 0">
+                                    <template x-if="!isLoading && products.length === 0">
                                         <tr>
-                                            <td colspan="6" class="px-6 py-12 text-center text-gray-500">Produk
-                                                tidak
-                                                ditemukan.</td>
+                                            <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                                                Produk tidak ditemukan.
+                                            </td>
                                         </tr>
                                     </template>
                                 </tbody>
                             </table>
                         </div>
-                    </form>
 
-                    <div class="flex justify-between items-center mt-4">
-                        <span class="text-sm text-gray-700">
-                            Menampilkan <span x-text="startRecord" class="font-medium"></span> sampai <span
-                                x-text="endRecord" class="font-medium"></span> dari <span
-                                x-text="filteredProducts.length" class="font-medium"></span> hasil
-                        </span>
-                        <div class="flex items-center space-x-1">
-                            <button @click="prevPage" :disabled="currentPage === 1"
-                                class="px-3 py-1 rounded-md bg-white border border-gray-300 text-sm hover:bg-gray-50 disabled:opacity-50">&laquo;
-                                Prev</button>
-                            <template x-for="page in pages" :key="page">
-                                <button @click="currentPage = page"
-                                    :class="{
-                                        'bg-indigo-600 text-white border-indigo-600': currentPage ===
-                                            page,
-                                        'bg-white border-gray-300': currentPage !== page
-                                    }"
-                                    class="px-3 py-1 rounded-md border text-sm" x-text="page"></button>
-                            </template>
-                            <button @click="nextPage" :disabled="currentPage === totalPages"
-                                class="px-3 py-1 rounded-md bg-white border border-gray-300 text-sm hover:bg-gray-50 disabled:opacity-50">Next
-                                &raquo;</button>
+                        <div class="flex justify-between items-center mt-4">
+                            <span class="text-sm text-gray-700">
+                                Menampilkan <span x-text="startRecord" class="font-medium"></span>
+                                sampai <span x-text="endRecord" class="font-medium"></span>
+                                dari <span x-text="products.length" class="font-medium"></span> hasil
+                            </span>
+                            <div class="flex items-center space-x-1">
+                                <button type="button" @click="prevPage" :disabled="currentPage === 1"
+                                    class="px-3 py-1 rounded-md bg-white border border-gray-300 text-sm hover:bg-gray-50 disabled:opacity-50">&laquo;
+                                    Prev</button>
+                                <template x-for="page in pages" :key="page">
+                                    <button type="button" @click="currentPage = page"
+                                        :class="{
+                                            'bg-indigo-600 text-white border-indigo-600': currentPage ===
+                                                page,
+                                            'bg-white border-gray-300': currentPage !== page
+                                        }"
+                                        class="px-3 py-1 rounded-md border text-sm" x-text="page"></button>
+                                </template>
+                                <button type="button" @click="nextPage" :disabled="currentPage === totalPages"
+                                    class="px-3 py-1 rounded-md bg-white border border-gray-300 text-sm hover:bg-gray-50 disabled:opacity-50">Next
+                                    &raquo;</button>
+                            </div>
                         </div>
-                    </div>
-
+                    </form>
                 </div>
             </div>
         </div>
@@ -185,19 +165,50 @@
 
     <x-slot name="script">
         <script>
-            function posManager(products) {
+            function posManager(initialProducts) {
                 return {
-                    products: products.map(p => ({
-                        ...p,
-                        quantity: 0,
-                        image_url: p.image ? `{{ asset('storage') }}/${p.image}` :
-                            'https://placehold.co/48x48/e2e8f0/a0aec0?text=N/A'
-                    })),
+                    products: [],
+                    initialProducts: initialProducts,
                     search: '',
+                    isLoading: false,
                     itemsPerPage: 10,
                     currentPage: 1,
                     sortColumn: 'name',
                     sortDirection: 'asc',
+
+                    init() {
+                        this.products = this.initialProducts.map(p => ({
+                            ...p,
+                            quantity: 0,
+                            image_url: p.image ? `{{ asset('storage') }}/${p.image}` :
+                                `https://placehold.co/48x48/e2e8f0/a0aec0?text=N/A`
+                        }));
+
+                        this.$watch('search', () => {
+                            this.isLoading = true;
+                            this.currentPage = 1; // Reset ke halaman 1 setiap kali ada pencarian baru
+                            this.fetchProducts();
+                        });
+                    },
+
+                    async fetchProducts() {
+                        try {
+                            const response = await fetch(`{{ route('cashier.pos.search') }}?q=${this.search}`);
+                            const data = await response.json();
+                            const currentQuantities = new Map(this.products.map(p => [p.id, p.quantity]));
+
+                            this.products = data.map(p => ({
+                                ...p,
+                                quantity: currentQuantities.get(p.id) || 0,
+                                image_url: p.image ? `{{ asset('storage') }}/${p.image}` :
+                                    `https://placehold.co/48x48/e2e8f0/a0aec0?text=N/A`
+                            }));
+                        } catch (error) {
+                            console.error('Gagal mencari produk:', error);
+                        } finally {
+                            this.isLoading = false;
+                        }
+                    },
 
                     formatCurrency(number) {
                         return new Intl.NumberFormat('id-ID').format(number);
@@ -219,17 +230,14 @@
 
                     updateQuantity(productId, value) {
                         const product = this.products.find(p => p.id === productId);
-                        const qty = parseInt(value, 10);
                         if (!product) return;
+                        const qty = parseInt(value, 10);
 
-                        if (isNaN(qty) || qty < 0) {
-                            product.quantity = 0;
-                        } else if (qty > product.stock) {
+                        if (isNaN(qty) || qty < 0) product.quantity = 0;
+                        else if (qty > product.stock) {
                             product.quantity = product.stock;
                             alert('Kuantitas melebihi stok yang tersedia.');
-                        } else {
-                            product.quantity = qty;
-                        }
+                        } else product.quantity = qty;
                     },
 
                     sortBy(column) {
@@ -241,24 +249,20 @@
                         }
                     },
 
-                    get itemsInCart() {
-                        return this.products.reduce((total, p) => total + (p.quantity > 0 ? 1 : 0), 0);
+                    sortIcon(column) {
+                        if (this.sortColumn !== column) return '';
+                        let icon = this.sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7';
+                        return `<svg class="w-3 h-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${icon}"></path></svg>`;
                     },
 
-                    get filteredProducts() {
-                        this.currentPage = 1;
-                        if (!this.search) return this.products;
-                        return this.products.filter(p =>
-                            p.name.toLowerCase().includes(this.search.toLowerCase()) ||
-                            p.product_code.toLowerCase().includes(this.search.toLowerCase())
-                        );
+                    get itemsInCart() {
+                        return this.products.filter(p => p.quantity > 0).length;
                     },
 
                     get sortedProducts() {
-                        return [...this.filteredProducts].sort((a, b) => {
+                        return [...this.products].sort((a, b) => {
                             let valA = a[this.sortColumn];
                             let valB = b[this.sortColumn];
-
                             if (typeof valA === 'string') {
                                 return this.sortDirection === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(
                                     valA);
@@ -274,24 +278,29 @@
                     },
 
                     get totalPages() {
-                        return Math.ceil(this.filteredProducts.length / this.itemsPerPage);
+                        return Math.ceil(this.products.length / this.itemsPerPage);
                     },
 
                     get startRecord() {
-                        if (this.filteredProducts.length === 0) return 0;
+                        if (this.products.length === 0) return 0;
                         return (this.currentPage - 1) * this.itemsPerPage + 1;
                     },
 
                     get endRecord() {
-                        return Math.min(this.currentPage * this.itemsPerPage, this.filteredProducts.length);
+                        return Math.min(this.currentPage * this.itemsPerPage, this.products.length);
                     },
 
+                    // Logika paginasi yang lebih canggih
                     get pages() {
-                        const range = [];
-                        for (let i = 1; i <= this.totalPages; i++) {
-                            range.push(i);
+                        let from = Math.max(1, this.currentPage - 2);
+                        let to = Math.min(this.totalPages, this.currentPage + 2);
+                        if (to - from < 4) {
+                            if (from === 1) to = Math.min(this.totalPages, 5);
+                            else from = Math.max(1, this.totalPages - 4);
                         }
-                        return range;
+                        const pages = [];
+                        for (let i = from; i <= to; i++) pages.push(i);
+                        return pages;
                     },
 
                     nextPage() {

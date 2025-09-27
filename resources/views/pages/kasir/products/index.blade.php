@@ -145,26 +145,28 @@
                     {{-- KONTROL PAGINASI --}}
                     <div class="flex justify-between items-center mt-4">
                         <span class="text-sm text-gray-700">
-                            Showing <span x-text="startRecord"></span> to <span x-text="endRecord"></span> of <span
-                                x-text="filteredProducts.length"></span> entries
+                            Menampilkan <span x-text="startRecord" class="font-medium"></span>
+                            sampai <span x-text="endRecord" class="font-medium"></span>
+                            dari <span x-text="filteredProducts.length" class="font-medium"></span> hasil
                         </span>
                         <div class="flex items-center space-x-1">
                             <button @click="prevPage" :disabled="currentPage === 1"
-                                class="px-3 py-1 rounded-md bg-gray-200 disabled:opacity-50">Prev</button>
+                                class="px-3 py-1 rounded-md bg-white border border-gray-300 text-sm hover:bg-gray-50 disabled:opacity-50">&laquo;
+                                Prev</button>
                             <template x-for="page in pages" :key="page">
                                 <button @click="currentPage = page"
                                     :class="{
-                                        'bg-indigo-600 text-white': currentPage === page,
-                                        'bg-gray-200': currentPage !==
-                                            page
+                                        'bg-indigo-600 text-white border-indigo-600': currentPage ===
+                                            page,
+                                        'bg-white border-gray-300': currentPage !== page
                                     }"
-                                    class="px-3 py-1 rounded-md" x-text="page"></button>
+                                    class="px-3 py-1 rounded-md border text-sm" x-text="page"></button>
                             </template>
                             <button @click="nextPage" :disabled="currentPage === totalPages"
-                                class="px-3 py-1 rounded-md bg-gray-200 disabled:opacity-50">Next</button>
+                                class="px-3 py-1 rounded-md bg-white border border-gray-300 text-sm hover:bg-gray-50 disabled:opacity-50">Next
+                                &raquo;</button>
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>

@@ -20,4 +20,20 @@ class CashierPOSController extends Controller
         return view('pages.kasir.pos.index', compact('products'));
     }
     
+    public function search(Request $request)
+    {
+        $searchTerm = $request->query('q');
+
+        if (empty($searchTerm)) {
+            $products = Product::with('unit')->orderBy('name', 'asc')->get();
+        } else {
+            $products = Product::with('unit')
+                ->where('name', 'LIKE', "%{$searchTerm}%")
+                ->orWhere('product_code', 'LIKE', "%{$searchTerm}%")
+                ->orderBy('name', 'asc')
+                ->get();
+        }
+        
+        return response()->json($products);
+    }
 }
